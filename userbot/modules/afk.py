@@ -10,10 +10,10 @@ import time
 from telethon.events import StopPropagation
 
 from userbot import (COUNT_MSG, REDIS, LOGGER, LOGGER_GROUP, USERS, HELPER)
-from userbot.events import register
+from userbot.events import register, noabuse
 
 
-@register(incoming=True)
+@noabuse(incoming=True)
 async def mention_afk(mention):
     """ This function takes care of notifying the people who mention you that you are AFK."""
     global COUNT_MSG
@@ -116,26 +116,26 @@ async def type_afk_is_not_true(e):
         if LOGGER:
             await notafk.client.send_message(
                 LOGGER_GROUP,
-                "You've recieved "
-                + str(COUNT_MSG)
-                + " messages from "
-                + str(len(USERS))
-                + " chats while you were away",
+                "You've recieved " +
+                str(COUNT_MSG) +
+                " messages from " +
+                str(len(USERS)) +
+                " chats while you were away",
             )
             for i in USERS:
                 name = await notafk.client.get_entity(i)
                 name0 = str(name.first_name)
                 await notafk.client.send_message(
                     LOGGER_GROUP,
-                    "["
-                    + name0
-                    + "](tg://user?id="
-                    + str(i)
-                    + ")"
-                    + " sent you "
-                    + "`"
-                    + str(USERS[i])
-                    + " messages`",
+                    "[" +
+                    name0 +
+                    "](tg://user?id=" +
+                    str(i) +
+                    ")" +
+                    " sent you " +
+                    "`" +
+                    str(USERS[i]) +
+                    " messages`",
                 )
         COUNT_MSG = 0
         USERS = {}

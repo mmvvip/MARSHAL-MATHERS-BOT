@@ -23,6 +23,7 @@ from googleapiclient.discovery import build
 from googleapiclient.errors import HttpError
 from googletrans import LANGUAGES, Translator
 from gtts import gTTS
+from emoji import get_emoji_regexp
 from pytube import YouTube
 from pytube.helpers import safe_filename
 
@@ -57,7 +58,7 @@ async def img_sampler(event):
 
         # passing the arguments to the function
         paths = response.download(arguments)
-        lst = paths[query]
+        lst = paths[0][query]
         await event.client.send_file(await event.client.get_input_entity(event.chat_id), lst)
         os.remove(lst[0])
         os.remove(lst[1])
@@ -75,7 +76,7 @@ async def gsearch(q_event):
             f"gsearch {match}",
             stdout=asyncsh_PIPE,
             stderr=asyncsh_PIPE
-            )
+        )
         stdout, stderr = await result_.communicate()
         result = str(stdout.decode().strip()) \
             + str(stderr.decode().strip())
@@ -146,13 +147,13 @@ async def urban_dict(ud_e):
                 await ud_e.edit("`Output too large, sending as file.`")
                 file = open("output.txt", "w+")
                 file.write(
-                    "Text: "
-                    + query
-                    + "\n\nMeaning: "
-                    + mean[0]["def"]
-                    + "\n\n"
-                    + "Example: \n"
-                    + mean[0]["example"]
+                    "Text: " +
+                    query +
+                    "\n\nMeaning: " +
+                    mean[0]["def"] +
+                    "\n\n" +
+                    "Example: \n" +
+                    mean[0]["example"]
                 )
                 file.close()
                 await ud_e.client.send_file(
@@ -165,14 +166,14 @@ async def urban_dict(ud_e):
                 await ud_e.delete()
                 return
             await ud_e.edit(
-                "Text: **"
-                + query
-                + "**\n\nMeaning: **"
-                + mean[0]["def"]
-                + "**\n\n"
-                + "Example: \n__"
-                + mean[0]["example"]
-                + "__"
+                "Text: **" +
+                query +
+                "**\n\nMeaning: **" +
+                mean[0]["def"] +
+                "**\n\n" +
+                "Example: \n__" +
+                mean[0]["example"] +
+                "__"
             )
             if LOGGER:
                 await ud_e.client.send_message(
@@ -228,7 +229,7 @@ async def text_to_speech(query):
             await query.delete()
 
 
-@register(outgoing=True, pattern=r"^.trt(?: |$)([\s\S]*)") # ^.promote(?: |$)(.*)
+@register(outgoing=True, pattern=r"^.trt(?: |$)([\s\S]*)")
 async def translateme(trans):
     """ For .trt command, translate the given text using Google Translate. """
     if not trans.text[0].isalpha() and trans.text[0] not in ("/", "#", "@", "!"):
@@ -304,8 +305,10 @@ def youtube_search(
         location=None,
         location_radius=None
     ):
+
     """ Do a YouTube search. """
-    youtube = build('youtube', 'v3', developerKey=YOUTUBE_API_KEY, cache_discovery=False)
+    youtube = build('youtube', 'v3',
+                    developerKey=YOUTUBE_API_KEY, cache_discovery=False)
     search_response = youtube.search().list(
         q=query,
         type="video",
@@ -406,9 +409,11 @@ async def download_video(v_url):
         os.remove('thumbnail.jpg')
         await v_url.delete()
 
+
 def deEmojify(inputString):
     """ Remove emojis and other non-safe characters from string """
-    return inputString.encode('ascii', 'ignore').decode('ascii')
+    return get_emoji_regexp().sub(u'', inputString)
+
 
 HELPER.update({
     'img': ".img <search_query>\
